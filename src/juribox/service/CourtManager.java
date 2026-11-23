@@ -6,14 +6,15 @@ import juribox.model.*;
 import juribox.model.Case.*;
 
 import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.sql.SQLException;
 import java.util.*;
 
 /*
-  Module: Central CourtManager Orchestration Service
+  Module: Central CourtManager Orchestration Service & File Stream Persistence
   Member: Tanish
-  Date: 16 November 2026 - 17 November 2026
-  Topic: Facade Pattern, Resource Coordination, Registration & Docket Dispatch
+  Date: 16 November 2026 - 18 November 2026
+  Topic: Facade Pattern, Resource Coordination, Byte and Character Streams (FileOutputStream/FileInputStream)
  */
 public class CourtManager {
     public static final int MAX_DAILY_SLOTS = 6;
@@ -27,6 +28,7 @@ public class CourtManager {
 
     private final Scheduler scheduler;
     private final ConflictChecker conflictChecker;
+    private final String exportFilePath;
     private final DatabaseManager databaseManager;
     private final CourtSimulation courtSimulation;
 
@@ -44,6 +46,7 @@ public class CourtManager {
         if (!dir.exists()) {
             dir.mkdirs();
         }
+        this.exportFilePath = dataDirectory + "/schedule_export.txt";
         this.databaseManager = new DatabaseManager(dataDirectory);
         this.courtSimulation = new CourtSimulation();
 
@@ -302,9 +305,10 @@ public class CourtManager {
         );
     }
 
-    // --- Persistence (Database Sync Stubs) ---
+    // --- Persistence (File Streams & JDBC Database) ---
 
     public synchronized void saveData() throws IOException {
+        exportSchedule(new ArrayList<>(schedules));
         try {
             saveToDatabase();
         } catch (SQLException e) {
@@ -318,6 +322,44 @@ public class CourtManager {
         } catch (SQLException e) {
             System.err.println("[DATABASE LOAD WARNING] " + e.getMessage());
         }
+    }
+
+    /**
+     * Exports confirmed schedules using FileOutputStream and PrintWriter (Byte + Character stream).
+     */
+    public void exportSchedule(List<Schedule> scheduleList) throws IOException {
+        try (FileOutputStream fos = new FileOutputStream(exportFilePath);
+             PrintWriter writer = new PrintWriter(new OutputStreamWriter(fos, StandardCharsets.UTF_8))) {
+            writer.println("================================================================================");
+            writer.println("                          OFFICIAL COURT SCHEDULE EXPORT                        ");
+            writer.println("================================================================================");
+            for (Schedule s : scheduleList) {
+                writer.printf("[%s] Date: %s | %-18s | Case: %-6s | Judge: %-5s | Room: %-5s%n",
+                        s.getScheduleId(), s.getDate(), s.getSlotRangeDescription(),
+                        s.getCaseId(), s.getJudgeId(), s.getCourtroomId());
+            }
+            writer.println("================================================================================");
+        }
+    }
+
+    /**
+     * Reads exported schedule using FileInputStream and BufferedReader.
+     */
+    public String readExportedSchedule() throws IOException {
+        File file = new File(exportFilePath);
+        if (!file.exists()) {
+            return "No export file found at " + exportFilePath;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        try (FileInputStream fis = new FileInputStream(file);
+             BufferedReader reader = new BufferedReader(new InputStreamReader(fis, StandardCharsets.UTF_8))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line).append(System.lineSeparator());
+            }
+        }
+        return sb.toString();
     }
 
     public synchronized void saveToDatabase() throws SQLException {
