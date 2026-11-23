@@ -175,10 +175,10 @@ public class CourtManager {
         );
 
         if (oldJudge != null) {
-            oldJudge.freeSlots(oldSchedule.getDate(), oldSchedule.getStartSlot(), oldSchedule.getDurationSlots(), oldSchedule.getScheduleId());
+            oldJudge.releaseSlots(oldSchedule.getDate(), oldSchedule.getStartSlot(), oldSchedule.getDurationSlots(), oldSchedule.getScheduleId());
         }
         if (oldRoom != null) {
-            oldRoom.freeSlots(oldSchedule.getDate(), oldSchedule.getStartSlot(), oldSchedule.getDurationSlots(), oldSchedule.getScheduleId());
+            oldRoom.releaseSlots(oldSchedule.getDate(), oldSchedule.getStartSlot(), oldSchedule.getDurationSlots(), oldSchedule.getScheduleId());
         }
 
         oldSchedule.setDate(newDate);
@@ -230,7 +230,7 @@ public class CourtManager {
                 String priorityStr = (c != null) ? c.getPriority().name() : "N/A";
                 priorityStr = priorityStr.charAt(0) + priorityStr.substring(1).toLowerCase();
                 String judgeName = (j != null) ? j.getName() : s.getJudgeId();
-                String roomName = (cr != null) ? cr.getName() : s.getCourtroomId();
+                String roomName = (cr != null) ? cr.getRoomName() : s.getCourtroomId();
 
                 sb.append(String.format("%-18s | %-8s | %-10s | %-16s | %-14s | %-8s\n",
                         s.getSlotRangeDescription(), s.getCaseId(), typeStr, judgeName, roomName, priorityStr));
