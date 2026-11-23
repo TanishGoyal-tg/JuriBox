@@ -99,7 +99,7 @@ public final class DatabaseManager {
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            
+            // Common Case attributes (Slots 1 - 8)
             ps.setString(1, c.getCaseId());
             ps.setString(2, c.getTitle());
             ps.setString(3, c.getCaseType().name());
@@ -109,7 +109,7 @@ public final class DatabaseManager {
             ps.setString(7, c.getStatus().name());
             ps.setString(8, c.getAssignedScheduleId());
 
-            
+            // Type-specific attributes (Slots 9 & 10)
             if (c instanceof CivilCase) {
                 CivilCase civil = (CivilCase) c;
                 ps.setDouble(9, civil.getDisputeAmount());

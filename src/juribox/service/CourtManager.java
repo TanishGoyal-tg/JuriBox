@@ -1,6 +1,5 @@
 package juribox.service;
 
-import juribox.exception.CourtSchedulingException;
 import juribox.exception.CourtSchedulingException.*;
 import juribox.model.*;
 import juribox.model.Case.*;

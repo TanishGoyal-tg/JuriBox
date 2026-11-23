@@ -33,7 +33,7 @@ public class CourtSimulation {
                 if (list != null) list.add(s);
             }
         }
-
+        
         List<Thread> activeThreads = new ArrayList<>();
 
         // [Lakshit - 19 Nov 2026] Thread Spawning: Launch concurrent worker threads per operational courtroom
