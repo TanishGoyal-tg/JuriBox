@@ -9,9 +9,11 @@ import java.util.*;
 /*
   Module: Relational Persistence Engine & MySQL JDBC Connectivity
   Member: Lakshit
-  Topic: JDBC (Connection, Statement, executeQuery, executeUpdate, ResultSet)
+  Date: 20 November 2026 - 21 November 2026
+  Topic: MySQL JDBC (Driver, PreparedStatement, ResultSet, Batch Transactions)
  */
 public final class DatabaseManager {
+    // [Lakshit - 20 Nov 2026] Topic: Standard MySQL JDBC Connection Configuration
     private static final String DB_URL = "jdbc:mysql://localhost:3306/juribox_db?createDatabaseIfNotExist=true";
     private static final String DB_USER = "root";
     private static final String DB_PASSWORD = "2601";
@@ -66,113 +68,102 @@ public final class DatabaseManager {
 
         try (Connection conn = getConnection();
                 Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(createCasesSql);
-            stmt.executeUpdate(createJudgesSql);
-            stmt.executeUpdate(createCourtroomsSql);
-            stmt.executeUpdate(createSchedulesSql);
+            stmt.execute(createCasesSql);
+            stmt.execute(createJudgesSql);
+            stmt.execute(createCourtroomsSql);
+            stmt.execute(createSchedulesSql);
         } catch (SQLException e) {
             System.err.println("[JDBC NOTICE] MySQL connection pending (" + e.getMessage() + ")");
         }
     }
 
-    // Helper method to safely escape single quotes in SQL strings
-    private String escape(String str) {
-        if (str == null) return "NULL";
-        return "'" + str.replace("'", "''") + "'";
-    }
-
     public void saveCase(Case c) throws SQLException {
         String sql;
         if (c instanceof CivilCase) {
-            CivilCase civil = (CivilCase) c;
             sql = "REPLACE INTO cases (" +
                     "case_id, title, case_type, priority, duration_slots, required_specialization, " +
-                    "status, assigned_schedule_id, dispute_amount, mediation_attempted) VALUES (" +
-                    escape(c.getCaseId()) + ", " +
-                    escape(c.getTitle()) + ", " +
-                    escape(c.getCaseType().name()) + ", " +
-                    escape(c.getPriority().name()) + ", " +
-                    c.getDurationSlots() + ", " +
-                    escape(c.getRequiredSpecialization().name()) + ", " +
-                    escape(c.getStatus().name()) + ", " +
-                    escape(c.getAssignedScheduleId()) + ", " +
-                    civil.getDisputeAmount() + ", " +
-                    (civil.isMediationAttempted() ? 1 : 0) + ");";
+                    "status, assigned_schedule_id, dispute_amount, mediation_attempted" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         } else if (c instanceof CriminalCase) {
-            CriminalCase crim = (CriminalCase) c;
             sql = "REPLACE INTO cases (" +
                     "case_id, title, case_type, priority, duration_slots, required_specialization, " +
-                    "status, assigned_schedule_id, in_custody, violent_offense) VALUES (" +
-                    escape(c.getCaseId()) + ", " +
-                    escape(c.getTitle()) + ", " +
-                    escape(c.getCaseType().name()) + ", " +
-                    escape(c.getPriority().name()) + ", " +
-                    c.getDurationSlots() + ", " +
-                    escape(c.getRequiredSpecialization().name()) + ", " +
-                    escape(c.getStatus().name()) + ", " +
-                    escape(c.getAssignedScheduleId()) + ", " +
-                    (crim.isInCustody() ? 1 : 0) + ", " +
-                    (crim.isViolentOffense() ? 1 : 0) + ");";
+                    "status, assigned_schedule_id, in_custody, violent_offense" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         } else { // PropertyCase
-            PropertyCase prop = (PropertyCase) c;
             sql = "REPLACE INTO cases (" +
                     "case_id, title, case_type, priority, duration_slots, required_specialization, " +
-                    "status, assigned_schedule_id, property_location, injunction_requested) VALUES (" +
-                    escape(c.getCaseId()) + ", " +
-                    escape(c.getTitle()) + ", " +
-                    escape(c.getCaseType().name()) + ", " +
-                    escape(c.getPriority().name()) + ", " +
-                    c.getDurationSlots() + ", " +
-                    escape(c.getRequiredSpecialization().name()) + ", " +
-                    escape(c.getStatus().name()) + ", " +
-                    escape(c.getAssignedScheduleId()) + ", " +
-                    escape(prop.getPropertyLocation()) + ", " +
-                    (prop.isInjunctionRequested() ? 1 : 0) + ");";
+                    "status, assigned_schedule_id, property_location, injunction_requested" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
         }
 
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            
+            ps.setString(1, c.getCaseId());
+            ps.setString(2, c.getTitle());
+            ps.setString(3, c.getCaseType().name());
+            ps.setString(4, c.getPriority().name());
+            ps.setInt(5, c.getDurationSlots());
+            ps.setString(6, c.getRequiredSpecialization().name());
+            ps.setString(7, c.getStatus().name());
+            ps.setString(8, c.getAssignedScheduleId());
+
+            
+            if (c instanceof CivilCase) {
+                CivilCase civil = (CivilCase) c;
+                ps.setDouble(9, civil.getDisputeAmount());
+                ps.setInt(10, civil.isMediationAttempted() ? 1 : 0);
+            } else if (c instanceof CriminalCase) {
+                CriminalCase crim = (CriminalCase) c;
+                ps.setInt(9, crim.isInCustody() ? 1 : 0);
+                ps.setInt(10, crim.isViolentOffense() ? 1 : 0);
+            } else if (c instanceof PropertyCase) {
+                PropertyCase prop = (PropertyCase) c;
+                ps.setString(9, prop.getPropertyLocation());
+                ps.setInt(10, prop.isInjunctionRequested() ? 1 : 0);
+            }
+
+            ps.executeUpdate();
         }
     }
 
     public void saveJudge(Judge judge) throws SQLException {
-        String sql = "REPLACE INTO judges (judge_id, name, specialization) VALUES (" +
-                escape(judge.getJudgeId()) + ", " +
-                escape(judge.getName()) + ", " +
-                escape(judge.getSpecialization().name()) + ");";
-
+        String sql = "REPLACE INTO judges (judge_id, name, specialization) VALUES (?, ?, ?);";
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, judge.getJudgeId());
+            ps.setString(2, judge.getName());
+            ps.setString(3, judge.getSpecialization().name());
+            ps.executeUpdate();
         }
     }
 
     public void saveCourtroom(Courtroom cr) throws SQLException {
-        String sql = "REPLACE INTO courtrooms (courtroom_id, room_name, high_security) VALUES (" +
-                escape(cr.getCourtroomId()) + ", " +
-                escape(cr.getRoomName()) + ", " +
-                (cr.isHighSecurity() ? 1 : 0) + ");";
-
+        String sql = "REPLACE INTO courtrooms (courtroom_id, room_name, high_security) VALUES (?, ?, ?);";
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, cr.getCourtroomId());
+            ps.setString(2, cr.getRoomName());
+            ps.setInt(3, cr.isHighSecurity() ? 1 : 0);
+            ps.executeUpdate();
         }
     }
 
     public void saveSchedule(Schedule s) throws SQLException {
-        String sql = "REPLACE INTO schedules (schedule_id, case_id, judge_id, courtroom_id, hearing_date, start_slot, duration_slots) VALUES (" +
-                escape(s.getScheduleId()) + ", " +
-                escape(s.getCaseId()) + ", " +
-                escape(s.getJudgeId()) + ", " +
-                escape(s.getCourtroomId()) + ", " +
-                escape(s.getDate()) + ", " +
-                s.getStartSlot() + ", " +
-                s.getDurationSlots() + ");";
-
+        String sql = "REPLACE INTO schedules (schedule_id, case_id, judge_id, courtroom_id, hearing_date, start_slot, duration_slots) "
+                +
+                "VALUES (?, ?, ?, ?, ?, ?, ?);";
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, s.getScheduleId());
+            ps.setString(2, s.getCaseId());
+            ps.setString(3, s.getJudgeId());
+            ps.setString(4, s.getCourtroomId());
+            ps.setString(5, s.getDate());
+            ps.setInt(6, s.getStartSlot());
+            ps.setInt(7, s.getDurationSlots());
+            ps.executeUpdate();
         }
     }
 
@@ -181,8 +172,8 @@ public final class DatabaseManager {
         String sql = "SELECT * FROM cases;";
 
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 String id = rs.getString("case_id");
@@ -229,8 +220,8 @@ public final class DatabaseManager {
         String sql = "SELECT * FROM judges;";
 
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String id = rs.getString("judge_id");
                 String name = rs.getString("name");
@@ -246,8 +237,8 @@ public final class DatabaseManager {
         String sql = "SELECT * FROM courtrooms;";
 
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String id = rs.getString("courtroom_id");
                 String name = rs.getString("room_name");
@@ -263,8 +254,8 @@ public final class DatabaseManager {
         String sql = "SELECT * FROM schedules;";
 
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement();
-                ResultSet rs = stmt.executeQuery(sql)) {
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
             while (rs.next()) {
                 String sId = rs.getString("schedule_id");
                 String cId = rs.getString("case_id");
@@ -281,22 +272,22 @@ public final class DatabaseManager {
     }
 
     public void updateCaseStatus(String caseId, CaseStatus newStatus, String scheduleId) throws SQLException {
-        String sql = "UPDATE cases SET status = " + escape(newStatus.name()) +
-                ", assigned_schedule_id = " + escape(scheduleId) +
-                " WHERE case_id = " + escape(caseId) + ";";
-
+        String sql = "UPDATE cases SET status = ?, assigned_schedule_id = ? WHERE case_id = ?;";
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, newStatus.name());
+            ps.setString(2, scheduleId);
+            ps.setString(3, caseId);
+            ps.executeUpdate();
         }
     }
 
     public void deleteCase(String caseId) throws SQLException {
-        String sql = "DELETE FROM cases WHERE case_id = " + escape(caseId) + ";";
-
+        String sql = "DELETE FROM cases WHERE case_id = ?;";
         try (Connection conn = getConnection();
-                Statement stmt = conn.createStatement()) {
-            stmt.executeUpdate(sql);
+                PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, caseId);
+            ps.executeUpdate();
         }
     }
 
