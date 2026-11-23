@@ -287,7 +287,7 @@ public class CourtManager {
         sb.append("                 COURT SCHEDULING STATISTICS                \n");
         sb.append("============================================================\n");
         sb.append(String.format("Total Cases        : %d (Scheduled: %d, Pending: %d, Rescheduled: %d)\n",
-                cases.size(), scheduled, pending, rescheduled));
+                totalCases, scheduled, pending, rescheduled));
         sb.append(String.format("High Priority Cases: %d / %d scheduled\n", urgentDone, urgentTotal));
         sb.append(String.format("Detected Conflicts : %d\n", conflicts.size()));
         sb.append(String.format("Judge Utilization  : %.1f%%\n", jUtil));
