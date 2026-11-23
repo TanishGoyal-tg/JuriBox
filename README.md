@@ -81,15 +81,4 @@ java -cp "bin;lib/*" -ea juribox.test.SimulatorTest
 java -cp "bin:lib/*" -ea juribox.test.SimulatorTest
 ```
 
----
-
-## 👥 Team Contribution & Equal Weightage Division (25% Each)
-
-| Member | Module / Topics | Dates / Timeline | Owned Files & Components | Weightage |
-| :--- | :--- | :--- | :--- | :---: |
-| **Kabir** | **Core Domain Modeling & OOP Foundations**<br>• Abstract Classes & Encapsulation<br>• Inheritance & Method Overriding<br>• Polymorphic Urgency Calculations<br>• Static Nested Enums (`CaseType`, `Priority`, `CaseStatus`) | **10 Nov – 13 Nov 2026** | • `Case.java`<br>• `CivilCase.java`<br>• `CriminalCase.java`<br>• `PropertyCase.java` | **25%** |
-| **Yash** | **Resource Modeling, Exceptions & Business Rules**<br>• Resource Allocation & Set Tracking<br>• Custom Checked Exception Hierarchy<br>• Multi-Constraint Conflict Detection Engine<br>• Specialization & High-Security Room Matching | **13 Nov – 16 Nov 2026** | • `CourtSchedulingException.java`<br>• `Judge.java`<br>• `Courtroom.java`<br>• `Schedule.java`<br>• `ConflictChecker.java` | **25%** |
-| **Tanish** | **Algorithms, Optimization & Service Coordination**<br>• Greedy Priority-Driven Scheduling Algorithm<br>• Multi-Criteria `Comparator<Case>` Sorting<br>• Central Coordination & Dynamic Rescheduling<br>• In-Memory Analytics & File Streams (`FileOutputStream` / `FileInputStream`)<br>• 12-Scenario Automated Integration Test Suite | **16 Nov – 19 Nov 2026** | • `Scheduler.java`<br>• `CourtManager.java`<br>• `SimulatorTest.java` | **25%** |
-| **Lakshit** | **Concurrency, MySQL Persistence & User Interface**<br>• Multithreaded Courtroom Simulation (`Thread`, `join()`)<br>• Guarded Wait/Notify Producer-Consumer Queue (`wait()`, `notifyAll()`)<br>• Enterprise MySQL JDBC Architecture (`PreparedStatement`, `ResultSet`)<br>• Multi-Table ACID SQL Transactions (`setAutoCommit`, `commit`, `rollback`)<br>• Interactive 10-Option Flat Console Application Loop | **19 Nov – 22 Nov 2026** | • `CourtSimulation.java`<br>• `DatabaseManager.java`<br>• `Main.java` | **25%** |
-
 
