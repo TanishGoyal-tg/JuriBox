@@ -78,15 +78,28 @@ public final class DatabaseManager {
     }
 
     public void saveCase(Case c) throws SQLException {
-        String sql = "REPLACE INTO cases (" +
-                "case_id, title, case_type, priority, duration_slots, required_specialization, " +
-                "status, assigned_schedule_id, dispute_amount, mediation_attempted, " +
-                "in_custody, violent_offense, property_location, injunction_requested" +
-                ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        String sql;
+        if (c instanceof CivilCase) {
+            sql = "REPLACE INTO cases (" +
+                    "case_id, title, case_type, priority, duration_slots, required_specialization, " +
+                    "status, assigned_schedule_id, dispute_amount, mediation_attempted" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        } else if (c instanceof CriminalCase) {
+            sql = "REPLACE INTO cases (" +
+                    "case_id, title, case_type, priority, duration_slots, required_specialization, " +
+                    "status, assigned_schedule_id, in_custody, violent_offense" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        } else { // PropertyCase
+            sql = "REPLACE INTO cases (" +
+                    "case_id, title, case_type, priority, duration_slots, required_specialization, " +
+                    "status, assigned_schedule_id, property_location, injunction_requested" +
+                    ") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+        }
 
         try (Connection conn = getConnection();
                 PreparedStatement ps = conn.prepareStatement(sql)) {
 
+            // Common Case attributes (Slots 1 - 8)
             ps.setString(1, c.getCaseId());
             ps.setString(2, c.getTitle());
             ps.setString(3, c.getCaseType().name());
@@ -96,30 +109,19 @@ public final class DatabaseManager {
             ps.setString(7, c.getStatus().name());
             ps.setString(8, c.getAssignedScheduleId());
 
+            // Type-specific attributes (Slots 9 & 10) - No setNull needed!
             if (c instanceof CivilCase) {
                 CivilCase civil = (CivilCase) c;
                 ps.setDouble(9, civil.getDisputeAmount());
                 ps.setInt(10, civil.isMediationAttempted() ? 1 : 0);
-                ps.setNull(11, Types.INTEGER);
-                ps.setNull(12, Types.INTEGER);
-                ps.setNull(13, Types.VARCHAR);
-                ps.setNull(14, Types.INTEGER);
             } else if (c instanceof CriminalCase) {
                 CriminalCase crim = (CriminalCase) c;
-                ps.setNull(9, Types.DOUBLE);
-                ps.setNull(10, Types.INTEGER);
-                ps.setInt(11, crim.isInCustody() ? 1 : 0);
-                ps.setInt(12, crim.isViolentOffense() ? 1 : 0);
-                ps.setNull(13, Types.VARCHAR);
-                ps.setNull(14, Types.INTEGER);
+                ps.setInt(9, crim.isInCustody() ? 1 : 0);
+                ps.setInt(10, crim.isViolentOffense() ? 1 : 0);
             } else if (c instanceof PropertyCase) {
                 PropertyCase prop = (PropertyCase) c;
-                ps.setNull(9, Types.DOUBLE);
-                ps.setNull(10, Types.INTEGER);
-                ps.setNull(11, Types.INTEGER);
-                ps.setNull(12, Types.INTEGER);
-                ps.setString(13, prop.getPropertyLocation());
-                ps.setInt(14, prop.isInjunctionRequested() ? 1 : 0);
+                ps.setString(9, prop.getPropertyLocation());
+                ps.setInt(10, prop.isInjunctionRequested() ? 1 : 0);
             }
 
             ps.executeUpdate();
