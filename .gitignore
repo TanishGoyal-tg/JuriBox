@@ -1,6 +1,5 @@
 bin/
 *.class
 *.zip
+*.jar
 data/
-!lib/*.jar
-
