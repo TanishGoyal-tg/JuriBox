@@ -16,7 +16,7 @@ public final class DatabaseManager {
     // [Lakshit - 20 Nov 2026] Topic: Standard MySQL JDBC Connection Configuration
     private static final String DB_URL = "jdbc:mysql://localhost:3306/juribox_db?createDatabaseIfNotExist=true";
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = "2601";
+    private static final String DB_PASSWORD = "your_password";
 
     public DatabaseManager(String dataDirectory) {
         initializeSchema();
