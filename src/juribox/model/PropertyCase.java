@@ -11,10 +11,10 @@ public class PropertyCase extends Case {
     private boolean injunctionRequested;
 
     public PropertyCase(String caseId, String title, Priority priority, int durationSlots,
-                        String propertyLocation, boolean injunctionRequested) {
+        String propertyLocation, boolean injunctionRequested) {
         super(caseId, title, CaseType.PROPERTY, priority, durationSlots, CaseType.PROPERTY);
         this.propertyLocation = (propertyLocation != null && !propertyLocation.trim().isEmpty())
-                ? propertyLocation.trim() : "Unspecified";
+        ? propertyLocation.trim() : "Unspecified";
         this.injunctionRequested = injunctionRequested;
     }
 
@@ -37,7 +37,7 @@ public class PropertyCase extends Case {
     @Override
     public String getCaseDetails() {
         return String.format("Property Dispute | Location: %s | Injunction/Stay Requested: %s",
-                propertyLocation, (injunctionRequested ? "Yes" : "No"));
+           propertyLocation, (injunctionRequested ? "Yes" : "No"));
     }
 
     @Override

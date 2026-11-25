@@ -1,9 +1,9 @@
 package juribox.exception;
 
-/**
- * Consolidated custom exception hierarchy for court scheduling operations.
- * Houses specific exception subtypes as static nested classes to minimize file clutter.
- */
+
+  /*Consolidated custom exception hierarchy for court scheduling operations.
+  Houses specific exception subtypes as static nested classes to minimize file clutter.*/
+ 
 public class CourtSchedulingException extends Exception {
     private static final long serialVersionUID = 1L;
 
@@ -15,9 +15,9 @@ public class CourtSchedulingException extends Exception {
         super(message, cause);
     }
 
-    /**
-     * Thrown when an entity (Case, Judge, Courtroom) with the same ID already exists.
-     */
+ 
+    //Thrown when an entity (Case, Judge, Courtroom) with the same ID already exists.
+     
     public static class DuplicateEntityException extends CourtSchedulingException {
         private static final long serialVersionUID = 1L;
         public DuplicateEntityException(String message) {
@@ -25,9 +25,8 @@ public class CourtSchedulingException extends Exception {
         }
     }
 
-    /**
-     * Thrown when a requested entity ID does not exist in the system.
-     */
+    //Thrown when a requested entity ID does not exist in the system.
+     
     public static class EntityNotFoundException extends CourtSchedulingException {
         private static final long serialVersionUID = 1L;
         public EntityNotFoundException(String message) {
@@ -35,9 +34,8 @@ public class CourtSchedulingException extends Exception {
         }
     }
 
-    /**
-     * Thrown when a proposed schedule conflicts with judge, courtroom, or slot constraints.
-     */
+    //Thrown when a proposed schedule conflicts with judge, courtroom, or slot constraints.
+     
     public static class SchedulingConflictException extends CourtSchedulingException {
         private static final long serialVersionUID = 1L;
         public SchedulingConflictException(String message) {
