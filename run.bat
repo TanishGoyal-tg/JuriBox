@@ -2,6 +2,7 @@
 setlocal enabledelayedexpansion
 
 title Court Case Scheduling Simulator (JuriBox)
+chcp 65001 >nul
 cd /d "%~dp0"
 
 echo ============================================================
@@ -23,7 +24,7 @@ if not exist bin (
 )
 
 echo [1/2] Compiling Java source files...
-javac -cp "lib/*" -d bin src\juribox\exception\*.java src\juribox\model\*.java src\juribox\service\*.java src\juribox\app\*.java
+javac -encoding UTF-8 -cp "lib/*" -d bin src\juribox\exception\*.java src\juribox\model\*.java src\juribox\service\*.java src\juribox\app\*.java
 set COMPILE_STATUS=%ERRORLEVEL%
 
 if %COMPILE_STATUS% neq 0 (
