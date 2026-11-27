@@ -11,6 +11,8 @@ import java.util.*;
   Topic: Multithreading (Thread, join()), Inter-Thread Communication (wait() / notifyAll()), Guarded Blocks
  */
 public class CourtSimulation {
+    private static final String R = "\u001B[0m", B = "\u001B[1m", C = "\u001B[94m", G = "\u001B[92m", Y = "\u001B[93m";
+    private static final String[] THREAD_COLORS = {"\u001B[93m", "\u001B[96m", "\u001B[92m", "\u001B[95m", "\u001B[94m"};
 
     public void simulateDaySessions(String date,
                                    List<Courtroom> courtrooms,
@@ -18,10 +20,11 @@ public class CourtSimulation {
                                    Map<String, Case> caseMap,
                                    Map<String, Judge> judgeMap,
                                    int slotDelayMs) {
-        System.out.println("\n================================================================================");
-        System.out.printf("       STARTING LIVE CONCURRENT COURT SESSION SIMULATION: %s\n", date);
-        System.out.println("   (Each Courtroom is running concurrently on its own independent Java Thread)   ");
-        System.out.println("================================================================================\n");
+        String bar = C + "+================================================================================+" + R;
+        System.out.println("\n" + bar);
+        System.out.printf(C + "| " + B + "\u001B[97m%-78s" + R + C + " |\n", "LIVE CONCURRENT COURT SESSION SIMULATION: " + date);
+        System.out.printf(C + "| \u001B[90m%-78s" + R + C + " |\n", "Each Courtroom is running concurrently on its own independent Java Thread");
+        System.out.println(bar + "\n");
 
         Map<String, List<Schedule>> roomSchedulesMap = new HashMap<>();
         for (Courtroom cr : courtrooms) {
@@ -37,9 +40,11 @@ public class CourtSimulation {
         List<Thread> activeThreads = new ArrayList<>();
 
         // [Lakshit - 19 Nov 2026] Thread Spawning: Launch concurrent worker threads per operational courtroom
+        int idx = 0;
         for (Courtroom cr : courtrooms) {
             List<Schedule> roomSchedules = roomSchedulesMap.get(cr.getCourtroomId());
-            CourtroomWorker worker = new CourtroomWorker(cr, date, roomSchedules, caseMap, judgeMap, slotDelayMs);
+            String tc = THREAD_COLORS[idx++ % THREAD_COLORS.length];
+            CourtroomWorker worker = new CourtroomWorker(cr, date, roomSchedules, caseMap, judgeMap, slotDelayMs, tc);
             Thread roomThread = new Thread(worker, "Thread-" + cr.getCourtroomId());
             activeThreads.add(roomThread);
             roomThread.start();
@@ -50,15 +55,15 @@ public class CourtSimulation {
             try {
                 t.join();
             } catch (InterruptedException e) {
-                System.out.println("[SIMULATION INTERRUPTED]");
+                System.out.println("\u001B[91m[SIMULATION INTERRUPTED]" + R);
                 Thread.currentThread().interrupt();
                 return;
             }
         }
 
-        System.out.println("\n================================================================================");
-        System.out.printf("  ALL COURTROOM THREADS JOINED. SESSIONS CONCLUDED FOR: %s\n", date);
-        System.out.println("================================================================================\n");
+        System.out.println("\n" + bar);
+        System.out.printf(C + "| " + G + B + "%-78s" + R + C + " |\n", "ALL COURTROOM THREADS JOINED. SESSIONS CONCLUDED FOR: " + date);
+        System.out.println(bar + "\n");
     }
 
     public static class CourtroomWorker implements Runnable {
@@ -69,14 +74,21 @@ public class CourtSimulation {
         private final Map<String, Case> caseMap;
         private final Map<String, Judge> judgeMap;
         private final int speedDelayMs;
+        private final String tc;
 
         public CourtroomWorker(Courtroom courtroom, String date, List<Schedule> roomSchedules,
                                Map<String, Case> caseMap, Map<String, Judge> judgeMap, int speedDelayMs) {
+            this(courtroom, date, roomSchedules, caseMap, judgeMap, speedDelayMs, "\u001B[96m");
+        }
+
+        public CourtroomWorker(Courtroom courtroom, String date, List<Schedule> roomSchedules,
+                               Map<String, Case> caseMap, Map<String, Judge> judgeMap, int speedDelayMs, String tc) {
             this.courtroom = courtroom;
             this.date = date;
             this.caseMap = caseMap;
             this.judgeMap = judgeMap;
             this.speedDelayMs = speedDelayMs;
+            this.tc = tc;
             this.totalHearings = roomSchedules.size();
 
             this.docketQueue = new CaseDocketQueue<>(Math.max(1, roomSchedules.size()));
@@ -92,11 +104,11 @@ public class CourtSimulation {
         @Override
         public void run() {
             String tName = Thread.currentThread().getName();
-            log(String.format(">>> [%s] %s: Session opened for %s (%d hearing(s) queued)",
-                    tName, courtroom.getRoomName(), date, totalHearings));
+            log(String.format("%s>>> [%s]%s %s: Session opened for %s (%d hearing(s) queued)",
+                    B + tc, tName, R, courtroom.getRoomName(), date, totalHearings));
 
             if (totalHearings == 0) {
-                log(String.format("    [%s] %s: No hearings today. Room remains on standby.", tName, courtroom.getRoomName()));
+                log(String.format("    %s[%s]%s \u001B[90m%s: No hearings today. Room remains on standby.%s", tc, tName, R, courtroom.getRoomName(), R));
                 return;
             }
 
@@ -114,8 +126,8 @@ public class CourtSimulation {
                 String title = (c != null) ? c.getTitle() : "Unknown";
                 String judgeName = (j != null) ? j.getName() : s.getJudgeId();
 
-                log(String.format("    [%s] [SLOT %d-%d] STARTING: Case %s (\"%s\") | Presiding: %s",
-                        courtroom.getCourtroomId(), s.getStartSlot(), s.getEndSlot(), s.getCaseId(), title, judgeName));
+                log(String.format("    %s[%s]%s [SLOT %d-%d] %sSTARTING:%s Case %s (\"%s\") | Presiding: %s",
+                        B + tc, courtroom.getCourtroomId(), R, s.getStartSlot(), s.getEndSlot(), Y, R, s.getCaseId(), title, judgeName));
 
                 try {
                     Thread.sleep((long) speedDelayMs * s.getDurationSlots());
@@ -124,11 +136,11 @@ public class CourtSimulation {
                     return;
                 }
 
-                log(String.format("    [%s] [SLOT %d-%d] CONCLUDED: Case %s. Recess.",
-                        courtroom.getCourtroomId(), s.getStartSlot(), s.getEndSlot(), s.getCaseId()));
+                log(String.format("    %s[%s]%s [SLOT %d-%d] %sCONCLUDED:%s Case %s. Recess.",
+                        B + tc, courtroom.getCourtroomId(), R, s.getStartSlot(), s.getEndSlot(), G, R, s.getCaseId()));
             }
 
-            log(String.format("<<< %s: All daily court sessions completed. Chamber adjourned.", courtroom.getRoomName()));
+            log(String.format("%s<<< %s:%s All daily court sessions completed. Chamber adjourned.", B + tc, courtroom.getRoomName(), R));
         }
 
         private void log(String msg) {
