@@ -430,16 +430,16 @@ public class CourtManager {
             addJudge(new Judge("J02", "Hon. Justice Vance", CaseType.CRIMINAL));
             addJudge(new Judge("J03", "Hon. Justice Thorne", CaseType.PROPERTY));
 
-            addCourtroom(new Courtroom("CR01", "Courtroom 1 (General)", false));
-            addCourtroom(new Courtroom("CR02", "Courtroom 2 (High Security)", true));
-            addCourtroom(new Courtroom("CR03", "Courtroom 3 (Annex)", false));
+            addCourtroom(new Courtroom("CR01", "Tis Hazari Courtroom 1 (Civil)", false));
+            addCourtroom(new Courtroom("CR02", "Patiala House High-Security Hall", true));
+            addCourtroom(new Courtroom("CR03", "Saket District Annex Bench", false));
 
-            addCase(new CivilCase("C101", "Apex Corp vs BlueSky Ltd", Priority.MEDIUM, 1, 150_000, true));
-            addCase(new CivilCase("C102", "Consumer Protection Claim", Priority.LOW, 1, 8_500, false));
-            addCase(new CriminalCase("C103", "State vs Marcus Drake", Priority.HIGH, 2, true, true));
-            addCase(new CriminalCase("C104", "State vs Financial Embezzlement", Priority.MEDIUM, 1, false, false));
-            addCase(new PropertyCase("C105", "Green Valley Demolition Stay", Priority.HIGH, 1, "Sector 4", true));
-            addCase(new PropertyCase("C106", "Ancestral Estate Dispute", Priority.LOW, 2, "Pine Crest", false));
+            addCase(new CivilCase("C101", "Mehta Textiles vs Kapoor Exports", Priority.MEDIUM, 1, 150_000, true));
+            addCase(new CivilCase("C102", "NCDRC Consumer Refund Claim", Priority.LOW, 1, 8_500, false));
+            addCase(new CriminalCase("C103", "State of Delhi vs Vikram Rathore", Priority.HIGH, 2, true, true));
+            addCase(new CriminalCase("C104", "CBI vs Corporate Fraud Case", Priority.MEDIUM, 1, false, false));
+            addCase(new PropertyCase("C105", "DDA Demolition Stay Petition", Priority.HIGH, 1, "Dwarka Sector 12", true));
+            addCase(new PropertyCase("C106", "Ancestral Haveli Partition Suit", Priority.LOW, 2, "Jaipur Civil Lines", false));
         } catch (DuplicateEntityException ignored) {
         }
     }
