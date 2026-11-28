@@ -447,4 +447,8 @@ public class CourtManager {
     public List<String> getCourtDates() {
         return Collections.unmodifiableList(courtDates);
     }
+
+    public int[] getDatabaseMenuCounts() {
+        return databaseManager.getMenuCounts();
+    }
 }

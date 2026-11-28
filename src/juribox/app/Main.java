@@ -75,12 +75,16 @@ public class Main {
 
     private static void printMenu() {
         List<Case> all = courtManager.getAllCases();
-        long scheduled = all.stream().filter(Case::isScheduled).count();
+        int[] dbCounts = courtManager.getDatabaseMenuCounts();
+        int totalCases = (dbCounts != null) ? dbCounts[0] : all.size();
+        int pendingCases = (dbCounts != null) ? dbCounts[1] : courtManager.getPendingCases().size();
+        long scheduled = (dbCounts != null) ? dbCounts[2] : all.stream().filter(Case::isScheduled).count();
+        int totalJudges = (dbCounts != null) ? dbCounts[3] : courtManager.getAllJudges().size();
+        int totalRooms = (dbCounts != null) ? dbCounts[4] : courtManager.getAllCourtrooms().size();
         String bar = C + "+==================================================================+" + R;
         String sep = C + "+------------------------------------------------------------------+" + R;
         String stats = String.format("Cases: %d | Pending: %d | Scheduled: %d | Judges: %d | Rooms: %d",
-                all.size(), courtManager.getPendingCases().size(), scheduled,
-                courtManager.getAllJudges().size(), courtManager.getAllCourtrooms().size());
+                totalCases, pendingCases, scheduled, totalJudges, totalRooms);
         System.out.printf("\n%s\n%s| %s%-64s%s |\n%s| %s%-64s%s |\n%s\n", bar, C, B + W, "COURT SCHEDULER MENU", C, C, D, stats, C, sep);
         String[][] rows = {
                 {" 1.", "Add New Case", " 6.", "Schedule Cases Automatically"},

@@ -16,7 +16,7 @@ public final class DatabaseManager {
     // [Lakshit - 20 Nov 2026] Topic: Standard MySQL JDBC Connection Configuration
     private static final String DB_URL = "jdbc:mysql://localhost:3306/juribox_db?createDatabaseIfNotExist=true";
     private static final String DB_USER = "root";
-    private static final String DB_PASSWORD = Objects.requireNonNullElse(System.getenv("JURIBOX_DB_PASSWORD"), "your_password");
+    private static final String DB_PASSWORD = "2601";
 
     public DatabaseManager(String dataDirectory) {
         initializeSchema();
@@ -314,5 +314,33 @@ public final class DatabaseManager {
                 conn.setAutoCommit(true);
             }
         }
+    }
+
+    /**
+     * Returns [totalCases, pendingCases, scheduledCases, totalJudges, totalCourtrooms] from MySQL,
+     * or null if the database is unreachable.
+     */
+    public int[] getMenuCounts() {
+        String sql = "SELECT " +
+                "(SELECT COUNT(*) FROM cases) AS total_cases, " +
+                "(SELECT COUNT(*) FROM cases WHERE status = 'PENDING') AS pending_cases, " +
+                "(SELECT COUNT(*) FROM cases WHERE status IN ('SCHEDULED', 'RESCHEDULED')) AS scheduled_cases, " +
+                "(SELECT COUNT(*) FROM judges) AS total_judges, " +
+                "(SELECT COUNT(*) FROM courtrooms) AS total_rooms;";
+        try (Connection conn = getConnection();
+                PreparedStatement ps = conn.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
+            if (rs.next()) {
+                return new int[]{
+                        rs.getInt("total_cases"),
+                        rs.getInt("pending_cases"),
+                        rs.getInt("scheduled_cases"),
+                        rs.getInt("total_judges"),
+                        rs.getInt("total_rooms")
+                };
+            }
+        } catch (SQLException ignored) {
+        }
+        return null;
     }
 }
